@@ -12,22 +12,23 @@ use Illuminate\Support\Facades\Validator;
 class CompanyDataController extends Controller
 {
     //
-    public function index(){
-              $companies = ModelsCompanyData::all();
+    public function index(Request $request){
+    $keyword = $request->query('keyword');
 
+    $companies = ModelsCompanyData::query();
 
-              if($companies->isEmpty()){
-                return ResponseFormatter::error(
-                    null,
-                    'data not found',404
-                );
-              }
+    if ($keyword) {
+        $companies->where('CompanyName', 'like', "%{$keyword}%")
+            ->orWhere('CompanyAddress', 'like', "%{$keyword}%");
+    }
 
-            return  ResponseFormatter::success(
+    $companies = $companies->get();
 
-                $companies,
-                'Data succes Get'
-            );
+    if ($companies->isEmpty()) {
+        return ResponseFormatter::error(null, 'Data not found', 404);
+    }
+
+    return ResponseFormatter::success($companies, 'Data successfully retrieved');
     }
     public function store (Request $request) {
         try{
